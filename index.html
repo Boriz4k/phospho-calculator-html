@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phosphorylation Proteoform Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.27.0/plotly.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
+            color: white;
+            padding: 40px 30px 30px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            font-size: 1.15em;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .header .subtitle {
+            font-size: 0.95em;
+            opacity: 0.7;
+            font-style: italic;
+        }
+        
+        .spectrum-container {
+            padding: 30px;
+            background: white;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        #spectrum {
+            width: 100%;
+            height: 0;
+            padding-bottom: 49%; /* 49% aspect ratio (30% smaller than 70%) */
+            position: relative;
+        }
+        
+        #spectrum > div {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .preset-section {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .preset-phospho-combined {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        
+        .preset-buttons-inline {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .phospho-slider-inline {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            min-width: 400px;
+            flex: 1;
+        }
+        
+        .phospho-slider-inline label {
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+        }
+        
+        .phospho-slider-inline input[type="range"] {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .phospho-value-inline {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #333;
+            min-width: 50px;
+            text-align: right;
+        }
+        
+        @media (max-width: 1100px) {
+            .preset-phospho-combined {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .preset-buttons-inline {
+                justify-content: center;
+            }
+            
+            .phospho-slider-inline {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .preset-buttons-compact {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 500px) {
+            .preset-buttons-compact {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .main-control {
+            background: #f8f9fa;
+            padding: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .phospho-slider-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .phospho-slider-container h3 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.3em;
+        }
+        
+        .phospho-slider-wrapper {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .phospho-value-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .phospho-label {
+            font-size: 1.1em;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        .phospho-value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .phospho-sublabel {
+            font-size: 0.9em;
+            color: #888;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .site-sum-display {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        
+        .site-sum-display strong {
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .footer {
+            background: #2c2c2c;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-top: 3px solid #1a1a1a;
+        }
+        
+        .footer p {
+            margin: 8px 0;
+            opacity: 0.9;
+        }
+        
+        .footer .citation {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .footer .links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        
+        .footer .links a:hover {
+            opacity: 1;
+            text-decoration: underline;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 12px 24px;
+            background: white;
+            color: #2c2c2c;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .action-btn:active {
+            transform: translateY(0);
+        }
+        
+        #mainPhosphoSlider {
+            width: 100%;
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(to right, #e0e0e0 0%, #666 50%, #333 100%);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        #mainPhosphoSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #333;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+        }
+        
+        #mainPhosphoSlider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+            background: #000;
+        }
+        
+        #mainPhosphoSlider::-moz-range-thumb {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #333;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+        
+        .controls-header {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 1200px) {
+            .controls {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .control-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .control-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+        }
+        
+        .param-group {
+            margin-bottom: 20px;
+        }
+        
+        .param-group label {
+            display: block;
+            color: #555;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+        
+        .param-group input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .param-group input[type="number"]:focus {
+            outline: none;
+            border-color: #333;
+        }
+        
+        .param-group input[type="checkbox"] {
+            margin-right: 8px;
+        }
+        
+        .param-group small {
+            display: block;
+            margin-top: 5px;
+            color: #777;
+            font-size: 0.85em;
+        }
+        
+        .site-control {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #e0e0e0;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .site-control:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .site-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .site-label {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
+        
+        .site-value {
+            background: #333;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: linear-gradient(to right, #e0e0e0 0%, #666 100%);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #333;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #000;
+            transform: scale(1.2);
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #333;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .preset-btn {
+            padding: 12px;
+            background: white;
+            border: 2px solid #333;
+            color: #333;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+        
+        .preset-btn:hover {
+            background: #333;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .preset-btn.protein {
+            grid-column: span 2;
+        }
+        
+        .preset-btn.alpha {
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+        
+        .preset-btn.alpha:hover {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .preset-btn.beta {
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+        
+        .preset-btn.beta:hover {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .preset-btn.gamma {
+            border-color: #FF9800;
+            color: #FF9800;
+        }
+        
+        .preset-btn.gamma:hover {
+            background: #FF9800;
+            color: white;
+        }
+        
+        .info-box {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .info-box h4 {
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+        
+        .info-box p {
+            color: #555;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+        
+        .site-info {
+            font-size: 0.8em;
+            color: #777;
+            margin-top: 3px;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧬 Phosphorylation Proteoform Calculator</h1>
+            <p>Simulate phosphorylation state distributions in mass spectrometry</p>
+            <p class="subtitle">Interactive tool for modeling combinatorial phosphorylation patterns and their deconvoluted mass spectra</p>
+        </div>
+        
+        <div class="spectrum-container">
+            <div id="spectrum"></div>
+        </div>
+        
+        <div class="preset-section">
+            <div class="preset-phospho-combined">
+                <div class="preset-buttons-inline">
+                    <button class="preset-btn" onclick="applyPreset('all50')" title="All sites at 50% - symmetric bell curve distribution">All 50%</button>
+                    <button class="preset-btn" onclick="applyPreset('gradient')" title="Sites at 10%, 20%, 30%...100% - broad asymmetric distribution">Gradient</button>
+                    <button class="preset-btn" onclick="applyPreset('bimodal')" title="Protein-specific bimodal: α1→4P, β1→2P, γ1→1P, random→3P, complex→5P">Bimodal</button>
+                    <button class="preset-btn" onclick="applyPreset('reset')" title="Reset all sites to 0% - unphosphorylated protein">Reset (0%)</button>
+                </div>
+                
+                <div class="phospho-slider-inline">
+                    <label>Avg Phosphorylations:</label>
+                    <input type="range" id="mainPhosphoSlider" min="0" max="1000" value="0" step="1"
+                           oninput="updateMainPhosphorylation(this.value)">
+                    <span class="phospho-value-inline" id="mainPhosphoValue">0.0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="controls-header">Advanced Peak Shape</div>
+            <div class="control-section">
+                <h3>Protein Parameters</h3>
+                
+                <div class="param-group">
+                    <label>Protein Mass (Da)</label>
+                    <input type="number" id="proteinMass" value="30265.15" step="0.01">
+                </div>
+                
+                <div class="param-group">
+                    <label>Resolving Power (FWHM)</label>
+                    <input type="number" id="resolvingPower" value="50000" step="1000" min="1000" max="500000">
+                    <small>Higher = sharper peaks (Orbitrap ~240k, TOF ~40k)</small>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>Phosphorylation Sites</h3>
+                <div id="siteControls"></div>
+                <div class="site-sum-display">
+                    Sum of sites: <strong id="sitesSum">0%</strong>
+                    <br>
+                    <small>(Should equal avg phosphorylations × 100%)</small>
+                </div>
+            </div>
+            
+            <div class="control-section">
+                <h3>AMPK Protein Presets</h3>
+                <div class="preset-buttons" style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                    <button class="preset-btn protein alpha" onclick="loadProtein('alpha1')" title="AMPK α1 subunit with 10 phosphorylation sites">α1 (64.7 kDa)</button>
+                    <button class="preset-btn protein beta" onclick="loadProtein('beta1')" title="AMPK β1 subunit with 5 phosphorylation sites">β1 (30.4 kDa)</button>
+                    <button class="preset-btn protein gamma" onclick="loadProtein('gamma1')" title="AMPK γ1 subunit with 1 phosphorylation site">γ1 (37.6 kDa)</button>
+                    <button class="preset-btn protein" onclick="loadProtein('complex')" title="Full AMPK α1β1γ1 heterotrimer">α1β1γ1 (132.6 kDa)</button>
+                    <button class="preset-btn" onclick="loadRandomProtein()" title="Generate random protein with random mass and phosphorylation pattern" style="border-color: #999; color: #666; margin-top: 10px;">Random Protein</button>
+                </div>
+            </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p class="citation">Krichel et al. (2025) - Interactive Phosphorylation Proteoform Calculator</p>
+            <p>Model combinatorial phosphorylation patterns and visualize resulting mass spectra</p>
+            
+            <div class="action-buttons">
+                <button class="action-btn" onclick="downloadSpectrum()" title="Save spectrum as PNG image">📊 Download Spectrum</button>
+                <button class="action-btn" onclick="exportData()" title="Export peak data as CSV">📁 Export Data (CSV)</button>
+            </div>
+            
+            <div class="links" style="margin-top: 20px;">
+                <span style="opacity: 0.7;">Developed for native mass spectrometry and top-down proteomics research</span>
+            </div>
+            
+            <div style="margin-top: 15px; opacity: 0.5; font-size: 0.85em;">
+                Version 1.0.0 | Last updated: February 2026
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Constants
+        const NUM_SITES = 10;
+        const PHOSPHO_MASS = 79.9799;
+        const NUM_PROTEOFORMS = Math.pow(2, NUM_SITES);
+        
+        // State
+        let siteRatios = Array(NUM_SITES).fill(0);
+        let proteinMass = 30265.15;
+        let resolvingPower = 50000;
+        let showIsotopes = true; // Always show isotopes
+        let currentProtein = 'beta1';
+        let siteLabels = [];
+        let useMainSlider = true; // Track if we're using the main slider or individual site sliders
+        
+        // Update sum display
+        function updateSumDisplay() {
+            let sum = 0;
+            for (let i = 0; i < NUM_SITES; i++) {
+                sum += siteRatios[i];
+            }
+            const sumPercent = Math.round(sum * 100);
+            document.getElementById('sitesSum').textContent = `${sumPercent}%`;
+        }
+        
+        // Update main phosphorylation slider
+        function updateMainPhosphorylation(sliderValue) {
+            // Slider is 0-1000, represents 0.0 to 10.0 average phosphorylations
+            const avgPhospho = parseFloat(sliderValue) / 100; // Convert to 0-10 range
+            document.getElementById('mainPhosphoValue').textContent = avgPhospho.toFixed(1);
+            
+            // Get current protein's site pattern
+            const protein = proteins[currentProtein];
+            
+            if (avgPhospho === 0) {
+                // Zero phosphorylation
+                for (let i = 0; i < NUM_SITES; i++) {
+                    siteRatios[i] = 0;
+                    document.getElementById(`site-${i}`).value = 0;
+                    document.getElementById(`value-${i}`).textContent = '0%';
+                }
+            } else {
+                // Calculate the "shape" from extents
+                let sumExtents = 0;
+                for (let i = 0; i < NUM_SITES; i++) {
+                    sumExtents += protein.sites[i].extent;
+                }
+                
+                if (sumExtents === 0) {
+                    sumExtents = NUM_SITES; // Treat as equal distribution
+                    for (let i = 0; i < NUM_SITES; i++) {
+                        protein.sites[i] = {extent: 1.0};
+                    }
+                }
+                
+                // NEW APPROACH: Smooth interpolation
+                // At avgPhospho = 0: all sites at 0%
+                // At avgPhospho = sumExtents: proportional to extents, sum = sumExtents
+                // At avgPhospho = 10: all sites at 100%
+                
+                for (let i = 0; i < NUM_SITES; i++) {
+                    const extent = protein.sites[i].extent || 0;
+                    
+                    if (extent === 0) {
+                        // Inactive site: only activate when avgPhospho approaches 10
+                        // Linear ramp from 0 at avgPhospho=sumExtents to 1 at avgPhospho=10
+                        if (avgPhospho <= sumExtents) {
+                            siteRatios[i] = 0;
+                        } else {
+                            siteRatios[i] = (avgPhospho - sumExtents) / (10 - sumExtents);
+                        }
+                    } else {
+                        // Active site: smooth interpolation
+                        if (avgPhospho <= sumExtents) {
+                            // Phase 1: Proportional scaling (maintains shape)
+                            siteRatios[i] = (extent / sumExtents) * avgPhospho;
+                        } else {
+                            // Phase 2: Transition from current value to 1.0
+                            // At avgPhospho = sumExtents: value = extent
+                            // At avgPhospho = 10: value = 1.0
+                            const valueAtSumExtents = extent;
+                            const progress = (avgPhospho - sumExtents) / (10 - sumExtents);
+                            siteRatios[i] = valueAtSumExtents + (1.0 - valueAtSumExtents) * progress;
+                        }
+                    }
+                    
+                    const displayValue = Math.round(siteRatios[i] * 100);
+                    document.getElementById(`site-${i}`).value = displayValue;
+                    document.getElementById(`value-${i}`).textContent = `${displayValue}%`;
+                }
+            }
+            
+            updateSumDisplay();
+            useMainSlider = true;
+            updateSpectrum();
+        }
+        
+        // Calculate current average phosphorylation (sum of all site ratios)
+        function calculateAveragePhosphorylation() {
+            let totalPhospho = 0;
+            for (let i = 0; i < NUM_SITES; i++) {
+                totalPhospho += siteRatios[i];
+            }
+            return totalPhospho;
+        }
+        
+        // AMPK protein data
+        const proteins = {
+            alpha1: {
+                name: "AMPK α1 Subunit",
+                mass: 64670.77,
+                color: '#4CAF50',
+                sites: [
+                    {name: 'S136', extent: 0.09},
+                    {name: 'S176', extent: 0.624},
+                    {name: 'T183', extent: 0.842},
+                    {name: 'S251', extent: 0.104},
+                    {name: 'T355/S356/S360', extent: 0.23},
+                    {name: 'T388', extent: 0.346},
+                    {name: 'S397', extent: 0.347},
+                    {name: 'S496', extent: 0.993},
+                    {name: 'S516', extent: 0.812},
+                    {name: 'S524', extent: 0.812}
+                ]
+            },
+            beta1: {
+                name: "AMPK β1 Subunit",
+                mass: 30396.34,
+                color: '#2196F3',
+                sites: [
+                    {name: 'S23/S24', extent: 0.95},
+                    {name: 'S96', extent: 0.08},
+                    {name: 'S101', extent: 0.08},
+                    {name: 'S108', extent: 0.95},
+                    {name: 'T148', extent: 0.08},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0}
+                ]
+            },
+            gamma1: {
+                name: "AMPK γ1 Subunit",
+                mass: 37579.39,
+                color: '#FF9800',
+                sites: [
+                    {name: 'S9', extent: 0.803},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0}
+                ]
+            },
+            complex: {
+                name: "AMPK α1β1γ1 Complex",
+                mass: 132646.5,
+                color: '#333',
+                sites: [
+                    {name: 'Mixed sites', extent: 0.5},
+                    {name: '', extent: 0.5},
+                    {name: '', extent: 0.5},
+                    {name: '', extent: 0.5},
+                    {name: '', extent: 0.5},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0},
+                    {name: '', extent: 0}
+                ]
+            },
+            random: {
+                name: "Random Protein",
+                mass: 50000,
+                color: '#333',
+                sites: Array(10).fill({name: '', extent: 0})
+            }
+        };
+        
+        // Initialize site controls
+        function initializeSiteControls() {
+            const container = document.getElementById('siteControls');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < NUM_SITES; i++) {
+                const siteDiv = document.createElement('div');
+                siteDiv.className = 'site-control';
+                
+                const siteName = siteLabels[i] || `Site ${i + 1}`;
+                const displayName = siteName ? siteName : `Site ${i + 1}`;
+                
+                siteDiv.innerHTML = `
+                    <div class="site-header">
+                        <span class="site-label">${displayName}</span>
+                        <span class="site-value" id="value-${i}">0%</span>
+                    </div>
+                    <div class="slider-container">
+                        <input type="range" id="site-${i}" min="0" max="100" value="0" 
+                               oninput="updateSite(${i}, this.value)">
+                    </div>
+                `;
+                container.appendChild(siteDiv);
+            }
+        }
+        
+        // Load random protein
+        function loadRandomProtein() {
+            // Random protein mass between 20-150 kDa
+            const randomMass = Math.floor(Math.random() * (150000 - 20000) + 20000);
+            proteinMass = randomMass;
+            document.getElementById('proteinMass').value = randomMass;
+            
+            // Random resolving power with weighted distribution
+            // 80% chance: 40k-100k (typical Orbitrap/Q-TOF range)
+            // 20% chance: 10k-300k (full range including low-res TOF and high-res FT-ICR)
+            let randomRP;
+            if (Math.random() < 0.8) {
+                // Common range: 40k-100k
+                randomRP = Math.floor(Math.random() * (100000 - 40000) + 40000);
+            } else {
+                // Less common: either very low (10k-40k) or very high (100k-300k)
+                if (Math.random() < 0.5) {
+                    randomRP = Math.floor(Math.random() * (40000 - 10000) + 10000);
+                } else {
+                    randomRP = Math.floor(Math.random() * (300000 - 100000) + 100000);
+                }
+            }
+            resolvingPower = randomRP;
+            document.getElementById('resolvingPower').value = randomRP;
+            
+            // Generate random extents for shape (these define the pattern)
+            const randomExtents = [];
+            for (let i = 0; i < NUM_SITES; i++) {
+                // Random extent between 0 and 1 (with some being 0 for variety)
+                randomExtents.push(Math.random() > 0.3 ? Math.random() : 0);
+            }
+            
+            // Update the random protein definition with these extents
+            proteins.random.sites = randomExtents.map((extent, i) => ({
+                name: `Site ${i + 1}`,
+                extent: extent
+            }));
+            proteins.random.mass = randomMass;
+            
+            // Set current protein to random
+            currentProtein = 'random';
+            
+            // Calculate total sum of extents
+            let sumExtents = randomExtents.reduce((sum, val) => sum + val, 0);
+            
+            // Set initial phosphorylation pattern based on extents
+            for (let i = 0; i < NUM_SITES; i++) {
+                siteRatios[i] = randomExtents[i];
+                const value = Math.round(randomExtents[i] * 100);
+                document.getElementById(`site-${i}`).value = value;
+                document.getElementById(`value-${i}`).textContent = `${value}%`;
+            }
+            
+            // Update site labels
+            siteLabels = randomExtents.map((_, i) => `Site ${i + 1}`);
+            
+            // Reinitialize controls with new labels
+            initializeSiteControls();
+            
+            // Restore the random values after reinitializing
+            for (let i = 0; i < NUM_SITES; i++) {
+                const value = Math.round(siteRatios[i] * 100);
+                document.getElementById(`site-${i}`).value = value;
+                document.getElementById(`value-${i}`).textContent = `${value}%`;
+            }
+            
+            // Update displays
+            updateSumDisplay();
+            const totalPhospho = calculateAveragePhosphorylation();
+            const sliderValue = Math.round(totalPhospho * 100);
+            document.getElementById('mainPhosphoSlider').value = sliderValue;
+            document.getElementById('mainPhosphoValue').textContent = totalPhospho.toFixed(1);
+            
+            updateSpectrum();
+        }
+        
+        // Load protein preset
+        function loadProtein(proteinKey) {
+            currentProtein = proteinKey;
+            const protein = proteins[proteinKey];
+            
+            // Update mass
+            proteinMass = protein.mass;
+            document.getElementById('proteinMass').value = protein.mass;
+            
+            // Update site labels and values
+            siteLabels = protein.sites.map(s => s.name);
+            
+            // Reinitialize controls
+            initializeSiteControls();
+            
+            // Set phosphorylation extents to full experimental values
+            let totalPhospho = 0;
+            protein.sites.forEach((site, i) => {
+                siteRatios[i] = site.extent;
+                totalPhospho += site.extent;
+                const value = Math.round(site.extent * 100);
+                document.getElementById(`site-${i}`).value = value;
+                document.getElementById(`value-${i}`).textContent = `${value}%`;
+            });
+            
+            // Set main slider to the total phosphorylation
+            const sliderValue = Math.round(totalPhospho * 100); // Convert to 0-1000 range
+            document.getElementById('mainPhosphoSlider').value = sliderValue;
+            document.getElementById('mainPhosphoValue').textContent = totalPhospho.toFixed(1);
+            
+            updateSumDisplay();
+            
+            useMainSlider = true;
+            updateSpectrum();
+        }
+        
+        // Update individual site
+        function updateSite(siteIndex, value) {
+            siteRatios[siteIndex] = parseFloat(value) / 100;
+            document.getElementById(`value-${siteIndex}`).textContent = `${value}%`;
+            
+            // Update main slider to reflect the total
+            const totalPhospho = calculateAveragePhosphorylation();
+            const sliderValue = Math.round(totalPhospho * 100); // Convert to 0-1000 range
+            document.getElementById('mainPhosphoSlider').value = sliderValue;
+            document.getElementById('mainPhosphoValue').textContent = totalPhospho.toFixed(1);
+            
+            updateSumDisplay();
+            useMainSlider = false;
+            updateSpectrum();
+        }
+        
+        // Calculate proteoform distribution
+        function calculateProteoformDistribution() {
+            const proteoforms = [];
+            
+            for (let i = 0; i < NUM_PROTEOFORMS; i++) {
+                let probability = 1.0;
+                let numPhospho = 0;
+                
+                for (let site = 0; site < NUM_SITES; site++) {
+                    const isPhosphorylated = (i >> site) & 1;
+                    
+                    if (isPhosphorylated) {
+                        probability *= siteRatios[site];
+                        numPhospho++;
+                    } else {
+                        probability *= (1 - siteRatios[site]);
+                    }
+                }
+                
+                proteoforms.push({
+                    numPhospho: numPhospho,
+                    probability: probability
+                });
+            }
+            
+            return proteoforms;
+        }
+        
+        // Aggregate proteoforms by phosphorylation number
+        function aggregateByPhosphoNumber(proteoforms) {
+            const aggregated = Array(NUM_SITES + 1).fill(0);
+            
+            proteoforms.forEach(pf => {
+                aggregated[pf.numPhospho] += pf.probability;
+            });
+            
+            return aggregated;
+        }
+        
+        // Averagine isotope calculation
+        function calculateAveragineIsotopes(mass) {
+            const avgResidueMass = 111.1254;
+            const numResidues = mass / avgResidueMass;
+            const C = 4.9384 * numResidues;
+            const C13_prob = 0.0107;
+            const lambda = C * C13_prob;
+            
+            const isotopes = [];
+            const maxIsotopes = Math.ceil(lambda + 5 * Math.sqrt(lambda));
+            
+            for (let k = 0; k <= maxIsotopes; k++) {
+                const prob = (Math.pow(lambda, k) / factorial(k)) * Math.exp(-lambda);
+                isotopes.push({ 
+                    offset: k * 1.00335,
+                    intensity: prob 
+                });
+            }
+            
+            const totalIntensity = isotopes.reduce((sum, iso) => sum + iso.intensity, 0);
+            isotopes.forEach(iso => iso.intensity /= totalIntensity);
+            
+            return isotopes;
+        }
+        
+        // Factorial with caching
+        const factorialCache = [1];
+        function factorial(n) {
+            if (n < 0) return 0;
+            if (n < factorialCache.length) return factorialCache[n];
+            
+            for (let i = factorialCache.length; i <= n; i++) {
+                factorialCache[i] = factorialCache[i - 1] * i;
+            }
+            return factorialCache[n];
+        }
+        
+        // Calculate FWHM and sigma
+        function calculateFWHM(mass, resolvingPower) {
+            return mass / resolvingPower;
+        }
+        
+        function fwhmToSigma(fwhm) {
+            return fwhm / (2 * Math.sqrt(2 * Math.log(2)));
+        }
+        
+        // Update spectrum
+        function updateSpectrum() {
+            proteinMass = parseFloat(document.getElementById('proteinMass').value);
+            resolvingPower = parseFloat(document.getElementById('resolvingPower').value);
+            // showIsotopes is always true
+            
+            const proteoforms = calculateProteoformDistribution();
+            const aggregated = aggregateByPhosphoNumber(proteoforms);
+            
+            const xMin = proteinMass - 200;  // Start 200 Da before unphosphorylated mass
+            const xMax = proteinMass + 1800; // End 1800 Da after (total 2 kDa range)
+            const xRange = xMax - xMin;
+            
+            const avgMass = proteinMass + 500;
+            const fwhm = calculateFWHM(avgMass, resolvingPower);
+            const sigma = fwhmToSigma(fwhm);
+            
+            const minPointsPerPeak = 10;
+            const numPoints = Math.max(2000, Math.ceil(xRange / fwhm * minPointsPerPeak));
+            const massStep = xRange / numPoints;
+            
+            const masses = [];
+            const intensities = [];
+            
+            for (let i = 0; i <= numPoints; i++) {
+                masses.push(xMin + i * massStep);
+                intensities.push(0);
+            }
+            
+            for (let numP = 0; numP <= NUM_SITES; numP++) {
+                if (aggregated[numP] > 0.001) {
+                    const baseMass = proteinMass + (numP * PHOSPHO_MASS);
+                    
+                    if (showIsotopes) {
+                        const isotopes = calculateAveragineIsotopes(baseMass);
+                        
+                        isotopes.forEach(iso => {
+                            const peakMass = baseMass + iso.offset;
+                            const peakIntensity = aggregated[numP] * iso.intensity;
+                            const fwhm = calculateFWHM(peakMass, resolvingPower);
+                            const sigma = fwhmToSigma(fwhm);
+                            
+                            const peakRange = 4 * sigma;
+                            const startIdx = Math.max(0, Math.floor((peakMass - peakRange - xMin) / massStep));
+                            const endIdx = Math.min(numPoints, Math.ceil((peakMass + peakRange - xMin) / massStep));
+                            
+                            for (let i = startIdx; i <= endIdx; i++) {
+                                const mass = masses[i];
+                                const exponent = -0.5 * Math.pow((mass - peakMass) / sigma, 2);
+                                intensities[i] += peakIntensity * Math.exp(exponent);
+                            }
+                        });
+                    } else {
+                        const fwhm = calculateFWHM(baseMass, resolvingPower);
+                        const sigma = fwhmToSigma(fwhm);
+                        
+                        const peakRange = 4 * sigma;
+                        const startIdx = Math.max(0, Math.floor((baseMass - peakRange - xMin) / massStep));
+                        const endIdx = Math.min(numPoints, Math.ceil((baseMass + peakRange - xMin) / massStep));
+                        
+                        for (let i = startIdx; i <= endIdx; i++) {
+                            const mass = masses[i];
+                            const exponent = -0.5 * Math.pow((mass - baseMass) / sigma, 2);
+                            intensities[i] += aggregated[numP] * Math.exp(exponent);
+                        }
+                    }
+                }
+            }
+            
+            const protein = proteins[currentProtein];
+            const trace = {
+                x: masses.map(m => m / 1000), // Convert to kDa
+                y: intensities,
+                type: 'scatter',
+                mode: 'lines',
+                fill: 'tozeroy',
+                line: {
+                    color: protein.color,
+                    width: 2
+                },
+                fillcolor: protein.color.replace(')', ', 0.3)').replace('rgb', 'rgba'),
+                name: 'Intensity'
+            };
+            
+            // Find peak maxima for annotations
+            const peakAnnotations = [];
+            const peakPositions = []; // Track positions to avoid overlaps
+            
+            for (let numP = 0; numP <= NUM_SITES; numP++) {
+                if (aggregated[numP] > 0.01) { // Only label significant peaks (>1%)
+                    const peakMass = proteinMass + (numP * PHOSPHO_MASS);
+                    
+                    // Find the maximum intensity near this peak
+                    let maxIntensity = 0;
+                    let maxMass = peakMass;
+                    
+                    // Search within ±40 Da of expected peak position
+                    for (let i = 0; i < masses.length; i++) {
+                        if (Math.abs(masses[i] - peakMass) < 40 && intensities[i] > maxIntensity) {
+                            maxIntensity = intensities[i];
+                            maxMass = masses[i];
+                        }
+                    }
+                    
+                    if (maxIntensity > 0.01) {
+                        peakPositions.push({
+                            numP: numP,
+                            x: maxMass / 1000, // in kDa
+                            y: maxIntensity,
+                            intensity: aggregated[numP]
+                        });
+                    }
+                }
+            }
+            
+            // Sort by x position
+            peakPositions.sort((a, b) => a.x - b.x);
+            
+            // Assign vertical positions to avoid overlaps
+            for (let i = 0; i < peakPositions.length; i++) {
+                const peak = peakPositions[i];
+                let yshift = 15; // Default position above peak
+                
+                // Check overlap with previous peak label
+                if (i > 0) {
+                    const prevPeak = peakPositions[i - 1];
+                    const distance = peak.x - prevPeak.x; // Distance in kDa
+                    
+                    // If peaks are close (< 0.15 kDa = 150 Da), alternate label positions
+                    if (distance < 0.15) {
+                        // Alternate between top and higher position
+                        yshift = (i % 2 === 0) ? 15 : 35;
+                    }
+                }
+                
+                peakAnnotations.push({
+                    x: peak.x,
+                    y: peak.y,
+                    text: `P${peak.numP}`,
+                    showarrow: false,
+                    font: {
+                        size: 14,
+                        color: '#333',
+                        family: 'Arial, sans-serif',
+                        weight: 'bold'
+                    },
+                    yshift: yshift
+                });
+            }
+            
+            const layout = {
+                title: {
+                    text: 'Simulated Deconvoluted Mass Spectrum',
+                    font: { size: 20, color: '#333' }
+                },
+                xaxis: {
+                    title: 'Mass (kDa)',
+                    showgrid: true,
+                    gridcolor: '#e0e0e0',
+                    zeroline: false,
+                    range: [xMin / 1000, xMax / 1000] // Convert to kDa
+                },
+                yaxis: {
+                    title: 'Relative Intensity',
+                    showgrid: true,
+                    gridcolor: '#e0e0e0',
+                    zeroline: true,
+                    range: [0, Math.max(...intensities) * 1.1]
+                },
+                annotations: peakAnnotations,
+                plot_bgcolor: '#fafafa',
+                paper_bgcolor: 'white',
+                margin: { t: 60, b: 60, l: 80, r: 40 },
+                hovermode: 'closest'
+            };
+            
+            const config = {
+                responsive: true,
+                displayModeBar: true,
+                displaylogo: false,
+                modeBarButtonsToRemove: ['lasso2d', 'select2d']
+            };
+            
+            Plotly.newPlot('spectrum', [trace], layout, config);
+        }
+        
+        // Preset functions
+        function applyPreset(preset) {
+            const protein = proteins[currentProtein];
+            
+            switch(preset) {
+                case 'all50':
+                    for (let i = 0; i < NUM_SITES; i++) {
+                        siteRatios[i] = 0.5;
+                        document.getElementById(`site-${i}`).value = 50;
+                        document.getElementById(`value-${i}`).textContent = '50%';
+                    }
+                    break;
+                    
+                case 'gradient':
+                    for (let i = 0; i < NUM_SITES; i++) {
+                        const value = (i + 1) * 10;
+                        siteRatios[i] = value / 100;
+                        document.getElementById(`site-${i}`).value = value;
+                        document.getElementById(`value-${i}`).textContent = `${value}%`;
+                    }
+                    break;
+                    
+                case 'bimodal':
+                    // Different bimodal patterns for each protein
+                    if (currentProtein === 'alpha1') {
+                        // Alpha: 4 sites at 90%, rest at 5% → ~4P peak
+                        for (let i = 0; i < NUM_SITES; i++) {
+                            const value = i < 4 ? 90 : 5;
+                            siteRatios[i] = value / 100;
+                            document.getElementById(`site-${i}`).value = value;
+                            document.getElementById(`value-${i}`).textContent = `${value}%`;
+                        }
+                    } else if (currentProtein === 'beta1') {
+                        // Beta: 2 sites at 95%, rest at 5% → ~2P peak (default)
+                        for (let i = 0; i < NUM_SITES; i++) {
+                            const value = (i === 0 || i === 3) ? 95 : 5; // S23/24 and S108
+                            siteRatios[i] = value / 100;
+                            document.getElementById(`site-${i}`).value = value;
+                            document.getElementById(`value-${i}`).textContent = `${value}%`;
+                        }
+                    } else if (currentProtein === 'gamma1') {
+                        // Gamma: 1 site at 95%, rest at 5% → ~1P peak
+                        for (let i = 0; i < NUM_SITES; i++) {
+                            const value = i === 0 ? 95 : 5;
+                            siteRatios[i] = value / 100;
+                            document.getElementById(`site-${i}`).value = value;
+                            document.getElementById(`value-${i}`).textContent = `${value}%`;
+                        }
+                    } else if (currentProtein === 'random') {
+                        // Random: Sites 1-3 at 95%, rest at 5% → ~3P peak
+                        for (let i = 0; i < NUM_SITES; i++) {
+                            const value = i < 3 ? 95 : 5; // Sites 1, 2, 3
+                            siteRatios[i] = value / 100;
+                            document.getElementById(`site-${i}`).value = value;
+                            document.getElementById(`value-${i}`).textContent = `${value}%`;
+                        }
+                    } else {
+                        // Complex: 6 sites at 80%, rest at 10% → ~5P peak
+                        for (let i = 0; i < NUM_SITES; i++) {
+                            const value = i < 6 ? 80 : 10;
+                            siteRatios[i] = value / 100;
+                            document.getElementById(`site-${i}`).value = value;
+                            document.getElementById(`value-${i}`).textContent = `${value}%`;
+                        }
+                    }
+                    break;
+                    
+                case 'reset':
+                    for (let i = 0; i < NUM_SITES; i++) {
+                        siteRatios[i] = 0;
+                        document.getElementById(`site-${i}`).value = 0;
+                        document.getElementById(`value-${i}`).textContent = '0%';
+                    }
+                    break;
+            }
+            updateSumDisplay();
+            
+            // Update main slider to reflect the total
+            const totalPhospho = calculateAveragePhosphorylation();
+            const sliderValue = Math.round(totalPhospho * 100);
+            document.getElementById('mainPhosphoSlider').value = sliderValue;
+            document.getElementById('mainPhosphoValue').textContent = totalPhospho.toFixed(1);
+            
+            updateSpectrum();
+        }
+        
+        // Download spectrum as PNG
+        function downloadSpectrum() {
+            Plotly.downloadImage('spectrum', {
+                format: 'png',
+                width: 1600,
+                height: 800,
+                filename: `phospho_spectrum_${currentProtein}_${calculateAveragePhosphorylation().toFixed(1)}P`
+            });
+        }
+        
+        // Export data as CSV
+        function exportData() {
+            // Get current spectrum data
+            const proteoforms = calculateProteoformDistribution();
+            const aggregated = aggregateByPhosphoNumber(proteoforms);
+            
+            // Create CSV content
+            let csv = 'Phosphorylation State,Probability,Mass (Da),Mass (kDa)\n';
+            
+            for (let numP = 0; numP <= NUM_SITES; numP++) {
+                if (aggregated[numP] > 0.0001) {
+                    const mass = proteinMass + (numP * PHOSPHO_MASS);
+                    csv += `P${numP},${aggregated[numP].toFixed(6)},${mass.toFixed(2)},${(mass/1000).toFixed(4)}\n`;
+                }
+            }
+            
+            // Add individual site data
+            csv += '\n\nSite,Phosphorylation Ratio\n';
+            const protein = proteins[currentProtein];
+            for (let i = 0; i < NUM_SITES; i++) {
+                const siteName = protein.sites[i].name || `Site ${i+1}`;
+                csv += `${siteName},${siteRatios[i].toFixed(4)}\n`;
+            }
+            
+            // Add metadata
+            csv += `\n\nProtein,${protein.name}\n`;
+            csv += `Mass (Da),${proteinMass}\n`;
+            csv += `Average Phosphorylations,${calculateAveragePhosphorylation().toFixed(2)}\n`;
+            csv += `Resolving Power,${resolvingPower}\n`;
+            csv += `Isotopes Shown,${showIsotopes}\n`;
+            
+            // Create download
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `phospho_data_${currentProtein}_${calculateAveragePhosphorylation().toFixed(1)}P.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Initialize
+        function initializeApp() {
+            if (typeof Plotly === 'undefined') {
+                document.getElementById('spectrum').innerHTML = 
+                    '<div style="padding: 40px; text-align: center; color: #d32f2f;">' +
+                    '<h3>⚠️ Plotly library failed to load</h3>' +
+                    '<p>Please check your internet connection and refresh the page.</p>' +
+                    '</div>';
+                return;
+            }
+            
+            document.getElementById('proteinMass').addEventListener('input', updateSpectrum);
+            document.getElementById('resolvingPower').addEventListener('input', updateSpectrum);
+            
+            // Load default protein (beta1)
+            loadProtein('beta1');
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+    </script>
+</body>
+</html>
