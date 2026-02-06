@@ -31,20 +31,28 @@
         .header {
             background: linear-gradient(135deg, #2c2c2c 0%, #1a1a1a 100%);
             color: white;
-            padding: 40px 30px 30px 30px;
+            padding: 25px 30px 20px 30px;
             text-align: center;
         }
         
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 15px;
+            font-size: 2em;
+            margin-bottom: 8px;
             font-weight: 600;
         }
         
+        .header .tagline {
+            font-size: 1.1em;
+            font-weight: 600;
+            opacity: 1;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+        
         .header p {
-            font-size: 1.15em;
+            font-size: 0.95em;
             opacity: 0.9;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
         }
         
         .header .subtitle {
@@ -53,16 +61,72 @@
             font-style: italic;
         }
         
-        .spectrum-container {
+        .main-content {
+            display: flex;
+            gap: 20px;
             padding: 30px;
             background: white;
-            border-bottom: 2px solid #e0e0e0;
+            min-height: 600px;
+        }
+        
+        .spectrum-section {
+            flex: 2;
+            min-width: 0;
+        }
+        
+        .sites-section {
+            flex: 1;
+            min-width: 300px;
+            max-width: 450px;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+        
+        .sites-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sites-section {
+                max-width: 100%;
+                max-height: 400px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 15px;
+            }
+            
+            #spectrum {
+                padding-bottom: 70%;
+            }
+            
+            .sites-section {
+                max-height: 300px;
+            }
+        }
+        
+        .spectrum-container {
+            background: white;
         }
         
         #spectrum {
             width: 100%;
             height: 0;
-            padding-bottom: 49%; /* 49% aspect ratio (30% smaller than 70%) */
+            padding-bottom: 65%; /* Taller aspect ratio for better vertical display */
             position: relative;
         }
         
@@ -77,7 +141,6 @@
         .preset-section {
             background: white;
             padding: 20px 30px;
-            border-bottom: 2px solid #e0e0e0;
         }
         
         .preset-phospho-combined {
@@ -318,118 +381,80 @@
         
         .controls {
             background: #f8f9fa;
-            padding: 30px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
+            padding: 20px 30px;
+            border-top: 2px solid #e0e0e0;
         }
         
-        .controls-header {
-            grid-column: 1 / -1;
-            text-align: center;
-            font-size: 1.5em;
-            color: #333;
-            margin-bottom: 10px;
+        .controls-compact {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .control-row label {
             font-weight: 600;
+            color: #333;
+            min-width: 120px;
         }
         
-        @media (max-width: 1200px) {
-            .controls {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        .control-row input[type="number"] {
+            width: 120px;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
         
         @media (max-width: 768px) {
-            .controls {
-                grid-template-columns: 1fr;
+            .control-row {
+                flex-direction: column;
+                align-items: stretch;
             }
-        }
-        
-        .control-section {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        }
-        
-        .control-section h3 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.1em;
-            border-bottom: 2px solid #333;
-            padding-bottom: 8px;
-        }
-        
-        .param-group {
-            margin-bottom: 20px;
-        }
-        
-        .param-group label {
-            display: block;
-            color: #555;
-            font-weight: 500;
-            margin-bottom: 8px;
-            font-size: 0.95em;
-        }
-        
-        .param-group input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1em;
-            transition: border-color 0.3s;
-        }
-        
-        .param-group input[type="number"]:focus {
-            outline: none;
-            border-color: #333;
-        }
-        
-        .param-group input[type="checkbox"] {
-            margin-right: 8px;
-        }
-        
-        .param-group small {
-            display: block;
-            margin-top: 5px;
-            color: #777;
-            font-size: 0.85em;
+            
+            .control-row label {
+                min-width: auto;
+            }
         }
         
         .site-control {
             background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 12px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 6px;
             border: 1px solid #e0e0e0;
-            transition: transform 0.2s, box-shadow 0.2s;
         }
         
         .site-control:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: #fafafa;
         }
         
         .site-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
         
         .site-label {
             font-weight: 600;
             color: #333;
-            font-size: 0.9em;
+            font-size: 0.85em;
         }
         
         .site-value {
             background: #333;
             color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.9em;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
             font-weight: 600;
         }
         
@@ -563,13 +588,26 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🧬 Phosphorylation Proteoform Calculator</h1>
-            <p>Simulate phosphorylation state distributions in mass spectrometry</p>
-            <p class="subtitle">Interactive tool for modeling combinatorial phosphorylation patterns and their deconvoluted mass spectra</p>
+            <h1>Phospho Proteoform Calculator</h1>
+            <p class="subtitle">Interactive tool for modeling phosphorylation patterns in mass spectrometry</p>
         </div>
         
-        <div class="spectrum-container">
-            <div id="spectrum"></div>
+        <div class="main-content">
+            <div class="spectrum-section">
+                <div class="spectrum-container">
+                    <div id="spectrum"></div>
+                </div>
+            </div>
+            
+            <div class="sites-section">
+                <h3>Phosphorylation Sites</h3>
+                <div id="siteControls"></div>
+                <div class="site-sum-display">
+                    Sum of sites: <strong id="sitesSum">0%</strong>
+                    <br>
+                    <small>(Should equal avg phosphorylations × 100%)</small>
+                </div>
+            </div>
         </div>
         
         <div class="preset-section">
@@ -591,42 +629,26 @@
         </div>
         
         <div class="controls">
-            <div class="controls-header">Advanced Peak Shape</div>
-            <div class="control-section">
-                <h3>Protein Parameters</h3>
+            <div style="text-align: center; color: #666; font-size: 0.9em; margin-bottom: 15px; font-style: italic;">
+                💡 Select a protein preset, adjust individual phosphorylation sites, or try different peak shape patterns
+            </div>
+            <div class="controls-compact">
+                <div class="control-row">
+                    <button class="preset-btn protein alpha" onclick="loadProtein('alpha1')" title="AMPK α1 subunit">α1 (64.7 kDa)</button>
+                    <button class="preset-btn protein beta" onclick="loadProtein('beta1')" title="AMPK β1 subunit">β1 (30.4 kDa)</button>
+                    <button class="preset-btn protein gamma" onclick="loadProtein('gamma1')" title="AMPK γ1 subunit">γ1 (37.6 kDa)</button>
+                    <button class="preset-btn protein" onclick="loadProtein('complex')" title="AMPK α1β1γ1 complex">Complex (132.6 kDa)</button>
+                    <button class="preset-btn" onclick="loadRandomProtein()" title="Random protein">Random Protein</button>
+                </div>
                 
-                <div class="param-group">
-                    <label>Protein Mass (Da)</label>
-                    <input type="number" id="proteinMass" value="30265.15" step="0.01">
+                <div class="control-row">
+                    <label>Protein Mass:</label>
+                    <input type="number" id="proteinMass" value="30265.15" step="0.01" style="width: 140px;">
+                    <span style="color: #666;">Da</span>
+                    <label style="margin-left: 30px;">Resolving Power:</label>
+                    <input type="number" id="resolvingPower" value="50000" step="1000" min="1000" max="500000" style="width: 100px;">
+                    <small style="color: #666;">(Orbitrap ~120k, TOF ~40k)</small>
                 </div>
-                
-                <div class="param-group">
-                    <label>Resolving Power (FWHM)</label>
-                    <input type="number" id="resolvingPower" value="50000" step="1000" min="1000" max="500000">
-                    <small>Higher = sharper peaks (Orbitrap ~240k, TOF ~40k)</small>
-                </div>
-            </div>
-            
-            <div class="control-section">
-                <h3>Phosphorylation Sites</h3>
-                <div id="siteControls"></div>
-                <div class="site-sum-display">
-                    Sum of sites: <strong id="sitesSum">0%</strong>
-                    <br>
-                    <small>(Should equal avg phosphorylations × 100%)</small>
-                </div>
-            </div>
-            
-            <div class="control-section">
-                <h3>AMPK Protein Presets</h3>
-                <div class="preset-buttons" style="display: grid; grid-template-columns: 1fr; gap: 10px;">
-                    <button class="preset-btn protein alpha" onclick="loadProtein('alpha1')" title="AMPK α1 subunit with 10 phosphorylation sites">α1 (64.7 kDa)</button>
-                    <button class="preset-btn protein beta" onclick="loadProtein('beta1')" title="AMPK β1 subunit with 5 phosphorylation sites">β1 (30.4 kDa)</button>
-                    <button class="preset-btn protein gamma" onclick="loadProtein('gamma1')" title="AMPK γ1 subunit with 1 phosphorylation site">γ1 (37.6 kDa)</button>
-                    <button class="preset-btn protein" onclick="loadProtein('complex')" title="Full AMPK α1β1γ1 heterotrimer">α1β1γ1 (132.6 kDa)</button>
-                    <button class="preset-btn" onclick="loadRandomProtein()" title="Generate random protein with random mass and phosphorylation pattern" style="border-color: #999; color: #666; margin-top: 10px;">Random Protein</button>
-                </div>
-            </div>
             </div>
         </div>
         
@@ -644,7 +666,7 @@
             </div>
             
             <div style="margin-top: 15px; opacity: 0.5; font-size: 0.85em;">
-                Version 1.0.0 | Last updated: February 2026
+                Version 1.1.0 | Last updated: February 2026
             </div>
         </div>
     </div>
@@ -1081,8 +1103,8 @@
             const proteoforms = calculateProteoformDistribution();
             const aggregated = aggregateByPhosphoNumber(proteoforms);
             
-            const xMin = proteinMass - 200;  // Start 200 Da before unphosphorylated mass
-            const xMax = proteinMass + 1800; // End 1800 Da after (total 2 kDa range)
+            const xMin = proteinMass - 100;  // Start 100 Da before unphosphorylated mass
+            const xMax = proteinMass + 900; // End 900 Da after (total 1 kDa range)
             const xRange = xMax - xMin;
             
             const avgMass = proteinMass + 500;
@@ -1191,6 +1213,7 @@
             peakPositions.sort((a, b) => a.x - b.x);
             
             // Assign vertical positions to avoid overlaps
+            let prevYshift = 15; // Track previous label position
             for (let i = 0; i < peakPositions.length; i++) {
                 const peak = peakPositions[i];
                 let yshift = 15; // Default position above peak
@@ -1200,12 +1223,14 @@
                     const prevPeak = peakPositions[i - 1];
                     const distance = peak.x - prevPeak.x; // Distance in kDa
                     
-                    // If peaks are close (< 0.15 kDa = 150 Da), alternate label positions
+                    // If peaks are close (< 0.15 kDa = 150 Da), use different height than previous
                     if (distance < 0.15) {
-                        // Alternate between top and higher position
-                        yshift = (i % 2 === 0) ? 15 : 35;
+                        // Alternate: if previous was low, go high; if high, go low
+                        yshift = (prevYshift === 15) ? 40 : 15;
                     }
                 }
+                
+                prevYshift = yshift; // Remember this position for next iteration
                 
                 peakAnnotations.push({
                     x: peak.x,
@@ -1411,8 +1436,9 @@
             document.getElementById('proteinMass').addEventListener('input', updateSpectrum);
             document.getElementById('resolvingPower').addEventListener('input', updateSpectrum);
             
-            // Load default protein (beta1)
-            loadProtein('beta1');
+            // Initialize site controls first, then load random protein on startup
+            initializeSiteControls();
+            loadRandomProtein();
         }
         
         if (document.readyState === 'loading') {

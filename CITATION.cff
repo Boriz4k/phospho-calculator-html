@@ -4,8 +4,8 @@ authors:
   - family-names: "Krichel"
     given-names: "Boris"
     affiliation: "Centre for Structural Systems Biology (CSSB)"
-title: "Phosphorylation Proteoform Calculator"
-version: 1.0.0
+title: "Phospho Proteoform Calculator"
+version: 1.1.0
 date-released: 2026-02-06
 url: "https://github.com/Boriz4k/phospho-calculator-html"
 repository-code: "https://github.com/Boriz4k/phospho-calculator-html"
@@ -14,12 +14,12 @@ keywords:
   - mass spectrometry
   - phosphorylation
   - proteomics
-  - native mass spectrometry
   - proteoforms
   - post-translational modifications
   - AMPK
   - interactive tool
-abstract: "Interactive web-based tool for simulating phosphorylation state distributions and their resulting deconvoluted mass spectra in native mass spectrometry. Models combinatorial phosphorylation patterns across 10 sites with real-time visualization. Developed from Excel prototype using AI-assisted programming to enable rapid, interactive exploration of complex phosphorylation patterns."
+  - responsive design
+abstract: "Interactive web-based tool for simulating phosphorylation state distributions and their resulting deconvoluted mass spectra in mass spectrometry. Models combinatorial phosphorylation patterns across 10 sites with real-time visualization. Features side-by-side layout, responsive design, and automatic peak annotation. Developed from Excel prototype using AI-assisted programming."
 references:
   - type: article
     title: "AMPK Phosphorylation Proceeds Through Hierarchical Proteoform Cascades Revealed by Integrated Mass Spectrometry"
@@ -29,5 +29,3 @@ references:
     year: 2025
     doi: "10.1101/2025.10.10.681638"
     repository: "bioRxiv"
-
-
