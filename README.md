@@ -123,9 +123,8 @@ Krichel et al. (2025). Phosphorylation Proteoform Calculator (Version 1.0.0). ht
 ## Related Publication
 
 The AMPK phosphorylation site occupancies used in this tool are derived from:
-
-Krichel et al. (2025). [Title of your paper]. *Journal Name*. [Link when available]
-
+AMPK Phosphorylation Proceeds Through Hierarchical Proteoform Cascades Revealed by Integrated Mass Spectrometry
+Krichel et al., bioRxiv (2025). (https://doi.org/10.1101/2025.10.10.681638 )
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.
@@ -147,7 +146,6 @@ Contributions welcome via GitHub Issues or Pull Requests.
 
 Boris Krichel and collaborators  
 Centre for Structural Systems Biology (CSSB)  
-University Medical Center Hamburg-Eppendorf (UKE)
 
 Developed as part of ERC-funded research on metabolic regulation via AMPK phosphorylation networks.
 
