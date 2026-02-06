@@ -108,17 +108,17 @@ Visit: [https://Boriz4k.github.io/phospho-calculator-html](https://Boriz4k.githu
 If you use this tool in your research, please cite:
 
 ```bibtex
-@software{krichel2025phosphocalc,
-  author = {Krichel, Boris and others},
+@software{krichel2026phosphocalc,
+  author = {Krichel, Boris},
   title = {Phosphorylation Proteoform Calculator},
-  year = {2025},
+  year = {2026},
   version = {1.0.0},
   url = {https://github.com/Boriz4k/phospho-calculator-html}
 }
 ```
 
 **Plain text:**
-Krichel et al. (2025). Phosphorylation Proteoform Calculator (Version 1.0.0). https://github.com/Boriz4k/phospho-calculator-html
+Krichel et al. (2026). Phosphorylation Proteoform Calculator (Version 1.0.0). https://github.com/Boriz4k/phospho-calculator-html
 
 ## Related Publication
 
@@ -152,7 +152,7 @@ Developed as part of ERC-funded research on metabolic regulation via AMPK phosph
 ## Acknowledgments
 
 - Plotly.js for interactive visualization
-- AMPK phosphorylation data from experimental native mass spectrometry (Krichel et al. 2025)
+- AMPK phosphorylation data (Krichel et al. 2025)
 - Averagine model from Senko et al. (1995)
 - AI-assisted development using Claude (Anthropic)
 
